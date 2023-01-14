@@ -7,9 +7,9 @@
 
 import UIKit
 
-class CollectionViewTableViewCell: UITableViewCell {
+class HomeTableViewCell: UITableViewCell {
 
-    static let identifer = "CollectionViewTableViewCell"
+    static let identifer = "HomeTableViewCell"
     private var movies: [Movie] = [Movie]()
     
     private let collectionView: UICollectionView = {
@@ -47,7 +47,7 @@ class CollectionViewTableViewCell: UITableViewCell {
     }
 }
 
-extension CollectionViewTableViewCell: UICollectionViewDelegate, UICollectionViewDataSource{
+extension HomeTableViewCell: UICollectionViewDelegate, UICollectionViewDataSource{
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return movies.count
     }

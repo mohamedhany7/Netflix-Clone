@@ -13,7 +13,7 @@ class HomeViewController: UIViewController {
 
     private let homeFeedTable: UITableView = {
         let table = UITableView(frame: .zero, style: .grouped)
-        table.register(CollectionViewTableViewCell.self, forCellReuseIdentifier: CollectionViewTableViewCell.identifer)
+        table.register(HomeTableViewCell.self, forCellReuseIdentifier: HomeTableViewCell.identifer)
         return table
     }()
     
@@ -61,7 +61,7 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource{
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: CollectionViewTableViewCell.identifer, for: indexPath) as? CollectionViewTableViewCell else{
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: HomeTableViewCell.identifer, for: indexPath) as? HomeTableViewCell else{
             return UITableViewCell()
         }
         
