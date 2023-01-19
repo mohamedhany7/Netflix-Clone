@@ -22,6 +22,7 @@ enum sections: Int{
     case popular = 2
     case upcomingMovies = 3
     case topRated = 4
+    case discover = 5
 }
 
 
@@ -30,6 +31,24 @@ class APICaller {
     
     func getFromEndPoint(type: Int, complition: @escaping (Result<[Movie], Error>) -> Void){
         guard let url = URL(string: generateUrl(type: type)) else { return }
+        
+        let task = URLSession.shared.dataTask(with: URLRequest(url: url)) { data, _ , error in
+            guard let data = data, error == nil else {
+                return
+            }
+            do{
+                let results = try JSONDecoder().decode(TrendingMoviesResponse.self, from: data)
+                complition(.success(results.results))
+            } catch {
+                complition(.failure(APIError.failedToGetData))
+            }
+        }
+        task.resume()
+    }
+    
+    func search(query: String, complition: @escaping (Result<[Movie], Error>) -> Void){
+        guard let query = query.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else { return }
+        guard let url = URL(string: "\(constants.baseUrl)/3/search/movie?api_key=\(constants.API_KEY)&query=\(query)") else { return }
         
         let task = URLSession.shared.dataTask(with: URLRequest(url: url)) { data, _ , error in
             guard let data = data, error == nil else {
@@ -59,6 +78,8 @@ class APICaller {
             link = "/3/movie/upcoming?api_key="
         case sections.topRated.rawValue:
             link = "/3/movie/top_rated?api_key="
+        case sections.discover.rawValue:
+            return "\(constants.baseUrl)/3/discover/movie?api_key=\(constants.API_KEY)&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page=1&with_watch_monetization_types=flatrate"
         default:
             link = ""
         }

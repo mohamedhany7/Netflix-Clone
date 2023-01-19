@@ -44,6 +44,7 @@ class HomeViewController: UIViewController {
         
         navigationItem.rightBarButtonItems = [
             UIBarButtonItem(image: UIImage(systemName: "person"), style: .done, target: self, action: nil),
+            UIBarButtonItem(image: UIImage(systemName: "magnifyingglass"), style: .done, target: UINavigationController(rootViewController: SearchViewController()), action: nil),
             UIBarButtonItem(image: UIImage(systemName: "play.rectangle"), style: .done, target: self, action: nil)
         ]
         
