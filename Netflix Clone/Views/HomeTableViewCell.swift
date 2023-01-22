@@ -7,11 +7,16 @@
 
 import UIKit
 
-class HomeTableViewCell: UITableViewCell {
+protocol HomeTableViewCellDelegate: AnyObject {
+    func homeTableViewCellDidTapCell(_ cell: HomeTableViewCell, viewModel: VideoViewModel)
+}
 
+class HomeTableViewCell: UITableViewCell {
+    
     static let identifer = "HomeTableViewCell"
     private var movies: [Movie] = [Movie]()
-    
+    weak var delegate: HomeTableViewCellDelegate?
+
     private let collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.itemSize = CGSize(width: 150, height: 200)
@@ -62,5 +67,26 @@ extension HomeTableViewCell: UICollectionViewDelegate, UICollectionViewDataSourc
         }
         cell.configure(with: model)
         return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        collectionView.deselectItem(at: indexPath, animated: true)
+        
+        let movie = movies[indexPath.row]
+        guard let movieName = movie.original_title ?? movie.original_name else {
+            return
+        }
+        
+        APICaller.shared.fetchFromYoutube(with: movieName + " trailer") {[weak self] result in
+            switch result{
+            case .success(let videoElement):
+                let movie = self?.movies[indexPath.row]
+                let viewModel = VideoViewModel(title: movieName, youtubeView: videoElement, titleOverview: movie?.overview ?? "Not yet")
+                guard let strongSelf = self else { return }
+                self?.delegate?.homeTableViewCellDidTapCell(strongSelf, viewModel: viewModel)
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        }
     }
 }

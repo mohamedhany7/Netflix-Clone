@@ -9,8 +9,10 @@ import UIKit
 
 class HomeViewController: UIViewController {
     
-    let sectionTitles: [String] = ["Trending Movies", "Trending Tv", "Popular", "Upcoming Movies", "Top Rated"]
-
+    private let sectionTitles: [String] = ["Trending Movies", "Trending Tv", "Popular", "Upcoming Movies", "Top Rated"]
+    private var randomTreandingMovie: Movie?
+    private var headerView: HeroHeaderUIView?
+    
     private let homeFeedTable: UITableView = {
         let table = UITableView(frame: .zero, style: .grouped)
         table.register(HomeTableViewCell.self, forCellReuseIdentifier: HomeTableViewCell.identifer)
@@ -28,13 +30,28 @@ class HomeViewController: UIViewController {
         
         configureHeader()
         
-        let headerView = HeroHeaderUIView(frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: 450))
+        headerView = HeroHeaderUIView(frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: 450))
         homeFeedTable.tableHeaderView = headerView
+        
+        configureHeroHeader()
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         homeFeedTable.frame = view.bounds
+    }
+    
+    private func configureHeroHeader(){
+        APICaller.shared.getFromEndPoint(type: 0) { [weak self] result in
+            switch result{
+            case .success(let movie):
+                let selectedMovie = movie.randomElement()
+                self?.randomTreandingMovie = selectedMovie
+                self?.headerView?.configure(with: MovieViewModel(titleName: "", posterURL: selectedMovie?.poster_path ?? "", date: ""))
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        }
     }
     
     private func configureHeader(){
@@ -65,6 +82,8 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource{
         guard let cell = tableView.dequeueReusableCell(withIdentifier: HomeTableViewCell.identifer, for: indexPath) as? HomeTableViewCell else{
             return UITableViewCell()
         }
+        
+        cell.delegate = self
         
         APICaller.shared.getFromEndPoint(type: indexPath.section) { results in
             switch results {
@@ -103,6 +122,16 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource{
         let offset = scrollView.contentOffset.y + defaultOffset
         
         navigationController?.navigationBar.transform = .init(translationX: 0, y: min(0, -offset))
+    }
+}
+
+extension HomeViewController: HomeTableViewCellDelegate {
+    func homeTableViewCellDidTapCell(_ cell: HomeTableViewCell, viewModel: VideoViewModel) {
+        DispatchQueue.main.async { [weak self] in
+            let vc = VideoPreviewViewController()
+            vc.configure(with: viewModel)
+            self?.navigationController?.pushViewController(vc, animated: true)
+        }
     }
 }
 

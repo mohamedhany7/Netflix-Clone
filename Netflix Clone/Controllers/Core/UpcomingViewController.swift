@@ -19,19 +19,13 @@ class UpcomingViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         view.backgroundColor = .systemBackground
-       
-//        navigationController?.navigationBar.prefersLargeTitles = true
-//        navigationController?.navigationItem.largeTitleDisplayMode = .always
-        
+    
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "New & Hot", style: .done, target: self, action: nil)
-        
         navigationItem.rightBarButtonItems = [
             UIBarButtonItem(image: UIImage(systemName: "person"), style: .done, target: self, action: nil),
             UIBarButtonItem(image: UIImage(systemName: "play.rectangle"), style: .done, target: self, action: nil)
         ]
-        
         navigationController?.navigationBar.tintColor = .white
         
         view.addSubview(upcomingTable)
@@ -78,5 +72,26 @@ extension UpcomingViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 140
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        
+        let movie = movies[indexPath.row]
+        guard let movieName = movie.original_title ?? movie.original_name else {return}
+        guard let movieOverview = movie.overview else {return}
+        
+        APICaller.shared.fetchFromYoutube(with: movieName) { [weak self] result in
+            switch result{
+            case .success(let videoElement):
+                DispatchQueue.main.async {
+                    let vc = VideoPreviewViewController()
+                    vc.configure(with: VideoViewModel(title: movieName, youtubeView: videoElement, titleOverview: movieOverview))
+                    self?.navigationController?.pushViewController(vc, animated: true)
+                }
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        }
     }
 }
